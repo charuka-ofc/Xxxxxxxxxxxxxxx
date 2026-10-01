@@ -1,18 +1,20 @@
-FROM node:20-alpine
-
-# ffmpeg witharai athi sticker hadanna. imagemagick one na.
-RUN apk add --no-cache ffmpeg webp
-
+FROM node:lts-buster 
+RUN apt-get update && \
+    apt-get install -y \
+    ffmpeg \
+    imagemagick \
+    webp && \
+    apt-get upgrade -y && \
+    rm -rf /var/lib/apt/lists/*
+  
 WORKDIR /usr/src/app
 
-COPY package*.json ./
+COPY package.json .
 
-# --production + legacy fix
-RUN npm install --production --legacy-peer-deps && \
-    npm install -g qrcode-terminal pm2 --legacy-peer-deps --force
+RUN npm install && npm install -g qrcode-terminal pm2
 
 COPY . .
 
-EXPOSE 8000
+EXPOSE 5000
 
-CMD ["node", "--expose-gc", "--max-old-space-size=250", "index.js"]
+CMD ["npm", "start"]
