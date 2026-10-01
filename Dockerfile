@@ -1,20 +1,18 @@
-FROM node:20-bookworm-slim
+FROM node:20-alpine
 
-RUN apt-get update && \
-    apt-get install -y \
-    ffmpeg \
-    imagemagick \
-    webp && \
-    rm -rf /var/lib/apt/lists/*
+# ffmpeg witharai athi sticker hadanna. imagemagick one na.
+RUN apk add --no-cache ffmpeg webp
 
 WORKDIR /usr/src/app
 
-COPY package.json .
+COPY package*.json ./
 
-RUN npm install && npm install -g qrcode-terminal pm2
+# --production + legacy fix
+RUN npm install --production --legacy-peer-deps && \
+    npm install -g qrcode-terminal pm2 --legacy-peer-deps --force
 
 COPY . .
 
 EXPOSE 8000
 
-CMD ["pm2-runtime", "start", "index.js", "--name", "mizuki-md"]
+CMD ["node", "--expose-gc", "--max-old-space-size=250", "index.js"]
